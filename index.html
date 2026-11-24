@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ur">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -143,7 +143,6 @@
     .section-title { font-size: 1.25rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
     .section-sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
 
-    /* Mood / Narazgi Meter */
     .meter-wrap {
       width: 100%; height: 16px; border-radius: 999px;
       background: rgba(124, 58, 237, 0.12); overflow: hidden; margin-top: 8px;
@@ -163,6 +162,7 @@
       height: 165px; border-radius: 10px; background: #f5effb;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       cursor: pointer; overflow: hidden; border: 1.5px dashed #c4b5fd; margin-bottom: 10px;
+      position: relative;
     }
     .polaroid-slot img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -250,7 +250,8 @@
         <button data-set-theme="sunset">Sunset</button>
       </div>
       <div class="pill-group">
-        <button id="soundToggle">🔊 Sound: ON</button>
+        <button id="musicToggle">🎵 Bestie Tune: ON</button>
+        <button id="soundToggle">🔊 SFX: ON</button>
         <button id="sparkleBtn">✨ Sparkle Burst</button>
       </div>
     </div>
@@ -258,8 +259,8 @@
     <!-- ENTRY SCREEN -->
     <div id="portalScreen" class="portal-card">
       <h1>🥺 Thori Si Naraz Bestie Ke Liye 🫶</h1>
-      <p>Narazgi door karne aur pyari si muskurahat wapas lanay ke liye charms unlock karein.</p>
-      <input type="text" id="userNameInput" value="Saba Anfaal" placeholder="Apna naam likhein..." />
+      <p>Narazgi door karne aur pyari si muskurahat wapas lanay ke liye charms unlock karein (Tap karte hi bestie tune bajne lagegi).</p>
+      <input type="text" id="userNameInput" value="ایک سابا" placeholder="Apna naam likhein..." />
 
       <div class="magic-icons">
         <button class="magic-btn" data-magic="0" title="Sorry Charm">🌸</button>
@@ -275,7 +276,7 @@
     <div id="mainApp" class="hidden">
       <div class="hero">
         <div>
-          <h2 id="welcomeHeading">Hey, Saba Anfaal 🥺🫶</h2>
+          <h2 id="welcomeHeading">Hey, ایک سابا 🥺🫶</h2>
           <p class="section-sub" style="margin-bottom:0;">Narazgi Mananay Wala Special Scrapbook & Mood Space</p>
         </div>
         <div class="side-switch">
@@ -288,7 +289,7 @@
       <!-- Narazgi / Smile Meter -->
       <div class="section-card">
         <div class="section-title">😊 Smile & Sulh Meter</div>
-        <p id="smileMeterText" class="section-sub" style="margin-bottom:6px;">Narazgi kam karne ke liye gفٹس unbox karein — abhi Smile Meter: <strong>25%</strong></p>
+        <p id="smileMeterText" class="section-sub" style="margin-bottom:6px;">Narazgi kam karne ke liye gifts unbox karein — abhi Smile Meter: <strong>25%</strong></p>
         <div class="meter-wrap">
           <div class="meter-fill" id="smileMeterFill"></div>
         </div>
@@ -298,18 +299,27 @@
       <div id="side1View">
         <div class="section-card">
           <div class="section-title">📸 Polaroid Memory Wall</div>
-          <p class="section-sub">Kisi bhi frame par tap kar ke apni favorite photo lagayein.</p>
+          <p class="section-sub">تصویریں ہمیشہ لگی رہنے کے لیے `photo1.jpg`، `photo2.jpg` اور `photo3.jpg` کو GitHub میں اپلوڈ کریں (یا فریم پر کلک کر کے عارضی تصویر بدلیں)۔</p>
           <div class="polaroid-grid">
             <div class="polaroid">
-              <div class="polaroid-slot" data-slot="0"><span>📷 Tap to add photo</span></div>
+              <div class="polaroid-slot" data-slot="0">
+                <img src="photo1.jpg" alt="Memory 1" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <span style="display:none;">📷 Tap to add photo</span>
+              </div>
               <div>Sath Hamesha 🫶</div>
             </div>
             <div class="polaroid">
-              <div class="polaroid-slot" data-slot="1"><span>📷 Tap to add photo</span></div>
+              <div class="polaroid-slot" data-slot="1">
+                <img src="photo2.jpg" alt="Memory 2" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <span style="display:none;">📷 Tap to add photo</span>
+              </div>
               <div>Chai & Sulh Breaks ☕</div>
             </div>
             <div class="polaroid">
-              <div class="polaroid-slot" data-slot="2"><span>📷 Tap to add photo</span></div>
+              <div class="polaroid-slot" data-slot="2">
+                <img src="photo3.jpg" alt="Memory 3" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <span style="display:none;">📷 Tap to add photo</span>
+              </div>
               <div>Bestie Smile Back ✨</div>
             </div>
           </div>
@@ -455,7 +465,68 @@
 
   <script>
     let soundEnabled = true;
+    let musicEnabled = true;
+    let bgmTimer = null;
+    let noteStep = 0;
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Upbeat, warm friendship melody (bouncy & cheerful bestie vibe)
+    const bestieMelody = [
+      { freq: 523.25, dur: 0.26, vol: 0.038 }, // C5
+      { freq: 659.25, dur: 0.26, vol: 0.038 }, // E5
+      { freq: 783.99, dur: 0.30, vol: 0.040 }, // G5
+      { freq: 659.25, dur: 0.26, vol: 0.036 }, // E5
+      { freq: 587.33, dur: 0.26, vol: 0.036 }, // D5
+      { freq: 698.46, dur: 0.26, vol: 0.038 }, // F5
+      { freq: 880.00, dur: 0.34, vol: 0.042 }, // A5
+      { freq: 783.99, dur: 0.28, vol: 0.038 }, // G5
+      { freq: 659.25, dur: 0.26, vol: 0.038 }, // E5
+      { freq: 783.99, dur: 0.26, vol: 0.038 }, // G5
+      { freq: 1046.50, dur: 0.36, vol: 0.040 }, // C6
+      { freq: 880.00, dur: 0.26, vol: 0.036 }, // A5
+      { freq: 783.99, dur: 0.26, vol: 0.036 }, // G5
+      { freq: 659.25, dur: 0.26, vol: 0.036 }, // E5
+      { freq: 587.33, dur: 0.28, vol: 0.036 }, // D5
+      { freq: 523.25, dur: 0.42, vol: 0.040 }  // C5
+    ];
+
+    function playBestieNote(noteObj) {
+      if (!musicEnabled || audioCtx.state !== "running") return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(noteObj.freq, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(noteObj.vol, now + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + noteObj.dur);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + noteObj.dur + 0.02);
+    }
+
+    function startBackgroundMusic() {
+      if (!musicEnabled) return;
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      if (bgmTimer) return;
+      bgmTimer = setInterval(() => {
+        if (!musicEnabled || audioCtx.state !== "running") return;
+        const note = bestieMelody[noteStep % bestieMelody.length];
+        playBestieNote(note);
+        noteStep++;
+      }, 340);
+    }
+
+    ["click", "touchstart"].forEach((ev) => {
+      document.addEventListener(ev, () => {
+        if (musicEnabled) startBackgroundMusic();
+      }, { once: false, passive: true });
+    });
+
     function playTone(freq = 580, duration = 0.12) {
       if (!soundEnabled) return;
       if (audioCtx.state === "suspended") audioCtx.resume();
@@ -526,9 +597,18 @@
       });
     });
 
+    document.getElementById("musicToggle").addEventListener("click", (e) => {
+      musicEnabled = !musicEnabled;
+      e.target.textContent = musicEnabled ? "🎵 Bestie Tune: ON" : "🎵 Bestie Tune: OFF";
+      if (musicEnabled) {
+        startBackgroundMusic();
+        playBestieNote({ freq: 659.25, dur: 0.25, vol: 0.04 });
+      }
+    });
+
     document.getElementById("soundToggle").addEventListener("click", (e) => {
       soundEnabled = !soundEnabled;
-      e.target.textContent = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+      e.target.textContent = soundEnabled ? "🔊 SFX: ON" : "🔇 SFX: OFF";
       if (soundEnabled) playTone(660, 0.1);
     });
 
@@ -537,6 +617,7 @@
     const unlockedMagic = new Set();
     document.querySelectorAll(".magic-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
+        startBackgroundMusic();
         playTone(620 + Number(btn.dataset.magic) * 90, 0.1);
         unlockedMagic.add(btn.dataset.magic);
         btn.classList.add("unlocked");
@@ -546,8 +627,9 @@
     });
 
     function enterSanctuary() {
+      startBackgroundMusic();
       playTone(780, 0.14);
-      const name = document.getElementById("userNameInput").value.trim() || "Saba Anfaal";
+      const name = document.getElementById("userNameInput").value.trim() || "ایک سابا";
       document.getElementById("welcomeHeading").textContent = `Hey, ${name} 🥺🫶`;
       document.getElementById("portalScreen").classList.add("hidden");
       document.getElementById("mainApp").classList.remove("hidden");
@@ -698,7 +780,7 @@
       document.getElementById("smileMeterText").innerHTML =
         count === giftItems.length
           ? `Narazgi khatam! Smile Meter: <strong>100% — Bestie Maan Gayi! 😊🫶</strong>`
-          : `Narazgi kam karne ke liye gفٹس unbox karein — abhi Smile Meter: <strong>${pct}%</strong>`;
+          : `Narazgi kam karne ke liye gifts unbox karein — abhi Smile Meter: <strong>${pct}%</strong>`;
     }
 
     function renderQuizSystem(items, tabsEl, containerEl, isGift = true) {
